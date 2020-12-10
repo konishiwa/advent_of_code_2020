@@ -2,7 +2,9 @@ package main
 
 import (
 	"bufio"
+	"fmt"
 	"os"
+	"strconv"
 	"strings"
 )
 
@@ -13,11 +15,12 @@ func check(e error) {
 	}
 }
 
-type contents struct {
-	bags []string
+type Bag struct {
+	num     int
+	bagType string
 }
 
-func readInFile() {
+func readInFile() []string {
 
 	//read the values in
 	file, err := os.Open("input.txt")
@@ -31,6 +34,13 @@ func readInFile() {
 	}
 
 	file.Close()
+	return text
+}
+
+func parseData(text []string) map[string]Bag {
+
+	//map for all bags
+	bagDef := make(map[string]Bag)
 
 	//map that holds how many times a line has been called
 	//bags := make(map[string]contents)
@@ -38,53 +48,77 @@ func readInFile() {
 	//set all bag contents
 	for _, each_ln := range text {
 
-		//if its: contain no other bags - we're not interested
-		if !strings.Contains(each_ln, "contain no other bags.") {
-
-			//clean the string up - remove whats not needed
-			cleanLn := strings.NewReplacer(each_ln, "bags", " ",
-				each_ln, "bag", " ",
-				each_ln, "contains", " ")
-
-			println(cleanLn)
-
-			//split string
-			//s := strings.Split(each_ln, " ")
-			//first two words are the type of bag
-			//key := s[0] + s[1]
-
-			// 	var contents string[]
-
-			// 	//TODO: find a way to prevent string manipulation
-			// 	//ignore  next two words: bags contains
-			// 	cont := true
-			// 	bagIndex := 4
-			// 	for cont {
-
-			// 		numBags, _ := strconv.Atoi(s[bagIndex])
-			// 		bagLen := len(s[bagIndex+2])
-
-			// 		if strings.Contains(s[bagIndex+3], ".") {
-			// 			cont = false
-			// 		}
-
-			// 		for x := 0; x < numBags; x++ {
-
-			// 			content_key := s[bagIndex+1] + s[bagIndex+2]
-			// 			contents = append(contents, content_key)
-			// 		}
-			// 		bagIndex += 4
-			// 		bags[key] = contents
-			// 	}
-			// }
+		//get the key
+		s := strings.Split(each_ln, "bags contain")
+		key := s[0]
+		bag := Bag{
+			num:     0,
+			bagType: "nothing",
 		}
 
+		//if its: contain no other bags - we're not interested
+		if !strings.Contains(each_ln, "contain no other bags.") {
+			//clean the string up - remove whats not needed
+			replacer := strings.NewReplacer(key, " ", "bags", " ", "bag", " ", "contain", " ", ".", " ")
+			cleanLn := replacer.Replace(each_ln)
+			cleanLn = strings.TrimSpace(cleanLn)
+			//split string
+			contents := strings.Split(cleanLn, ",")
+			for x := 0; x < len(contents); x++ {
+
+				contents[x] = strings.TrimSpace(contents[x])
+				//first character is the number
+				num := string(contents[x][0])
+				numBags, _ := strconv.Atoi(num)
+
+				//println("numBags ", numBags)
+				bag = Bag{
+					bagType: contents[x][1:],
+					num:     numBags,
+				}
+			}
+		}
+		bagDef[key] = bag
 	}
+	return bagDef
 }
 
 func main() {
 
 	//get commands
-	readInFile()
+	text := readInFile()
+	total := 0
+	bagDef := parseData(text)
 
+	fmt.Print(bagDef)
+	for key, _ := range bagDef {
+
+		println(key)
+		currentBag := bagDef[key]
+		fmt.Println(currentBag)
+		// for x := 0; x < currentBag.num; x++ {
+		// 	total += getContents(key, bagDef)
+		// }
+
+	}
+
+	println(total)
+
+}
+
+func getContents(key string, bag map[string]Bag) int {
+
+	total := 0
+	//base case
+	if key == "nothing" {
+		return 0
+	}
+
+	currentBag := bag[key]
+	if key == "shiny gold" {
+		total++
+	}
+	key = currentBag.bagType
+	println("the key is ", key)
+	return total + getContents(key, bag)
 }
