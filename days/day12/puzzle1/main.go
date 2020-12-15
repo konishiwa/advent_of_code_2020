@@ -68,31 +68,31 @@ func printManhattenDirections(directions []Direction) {
 	//total distance
 	var longitude int
 	var lattitude int
-	direction := face
+	move := face
 
 	for _, s := range directions {
 
-		println("current direction: ", direction)
+		println("current direction: ", move)
 
 		if s.direction == "L" {
 
 			steps := s.steps/90 - 1
-			possibleDirections := compassL[direction]
+			possibleDirections := compassL[face]
 			face = possibleDirections[steps]
 
 		} else if s.direction == "R" {
 
 			steps := s.steps/90 - 1
-			possibleDirections := compassR[direction]
+			possibleDirections := compassR[face]
 			face = possibleDirections[steps]
 
 		} else {
+
+			move = face
 			if s.direction != "F" {
-				direction = s.direction
-			} else {
-				direction = face
+				move = s.direction
 			}
-			switch direction {
+			switch move {
 			case "N":
 				longitude += s.steps
 			case "S":
@@ -110,7 +110,7 @@ func printManhattenDirections(directions []Direction) {
 
 func main() {
 
-	directions := parseInputFromFile("example.txt")
+	directions := parseInputFromFile("input.txt")
 	printManhattenDirections(directions)
 
 }
